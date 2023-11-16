@@ -32,3 +32,6 @@ spring:
     console:
       enabled: true
 
+jwt:
+  issuer: suhyun.p69@gmail.com
+  secret_key: study-springboot
