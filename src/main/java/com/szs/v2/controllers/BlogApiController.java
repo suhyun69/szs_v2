@@ -8,6 +8,7 @@ import com.szs.v2.services.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +22,8 @@ public class BlogApiController {
 
     @PostMapping("/articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request) {
-        Article savedArticle = blogService.save(request);
+
+        Article savedArticle = blogService.save(request, SecurityContextHolder.getContext().getAuthentication().getName());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedArticle);

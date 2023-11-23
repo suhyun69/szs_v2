@@ -16,7 +16,11 @@ public class BlogService {
 
     private final BlogRepository blogRepository;
 
-    public Article save(AddArticleRequest request) {
+    public Article save(AddArticleRequest request, String name) {
+
+        Article article = request.toEntity();
+        article.setInsId(name);
+
         return blogRepository.save(request.toEntity());
     }
 
