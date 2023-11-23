@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.util.matcher.RegexRequestMatcher.regexMatcher;
 
 @RequiredArgsConstructor
 @Configuration
@@ -70,8 +72,6 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
 
-        RequestMatcher printView = (request) -> request.getMethod() == "PUT";
-
         return http
                 .httpBasic(httpBasic -> httpBasic.disable()) // ID, Password 문자열을 Base64로 인코딩하여 전달하는 구조
                 .csrf(csrf -> csrf.disable()) // 쿠키 기반이 아닌 JWT 기반이므로 사용하지 않음
@@ -94,8 +94,11 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize  -> authorize
                         .requestMatchers(antMatcher("/user/api/signin")).permitAll()
                         .requestMatchers(antMatcher("/user/api/signup")).permitAll()
-                        .requestMatchers(antMatcher("/blog/api/articles")).permitAll()
-                        .requestMatchers(antMatcher("/blog/api/articles/**")).authenticated()
+                        .requestMatchers(antMatcher(HttpMethod.GET, "/blog/api/articles")).permitAll()
+                        .requestMatchers(antMatcher(HttpMethod.POST, "/blog/api/articles")).authenticated()
+                        .requestMatchers(regexMatcher(HttpMethod.GET, "/blog/api/articles/[0-9]+")).permitAll()
+                        .requestMatchers(regexMatcher(HttpMethod.PUT, "/blog/api/articles/[0-9]+")).authenticated()
+                        .requestMatchers(regexMatcher(HttpMethod.DELETE, "/blog/api/articles/[0-9]+")).authenticated()
                         .anyRequest().permitAll())
                 .addFilterBefore(new TokenAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // JWT 인증 필터 적용
                 .exceptionHandling(exception -> { // 에러 핸들링
